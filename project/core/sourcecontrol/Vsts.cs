@@ -438,7 +438,12 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
                 "/recursive",
                 "/noprompt");
 
-            if (Force)
+			if (AutoGetSource)
+			{
+				buffer.Add("/overwrite");
+			}
+
+            if (Force || CleanCopy)
             {
                 buffer.Add("/force");
             }

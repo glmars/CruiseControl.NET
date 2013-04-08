@@ -169,7 +169,6 @@
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(statusBar);
             this.Controls.Add(commands);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CurrentStatusWindow";
             this.Text = "Current Status for ...";

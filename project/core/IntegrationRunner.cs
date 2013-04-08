@@ -118,6 +118,7 @@ namespace ThoughtWorks.CruiseControl.Core
                         IntegrationSummary isExceptionFix = new IntegrationSummary(IntegrationStatus.Success, result.LastIntegration.Label, result.LastIntegration.LastSuccessfulIntegrationLabel, result.LastIntegration.StartTime);
                         IIntegrationResult irExceptionFix = new IntegrationResult(result.ProjectName, result.WorkingDirectory, result.ArtifactDirectory, result.IntegrationRequest, isExceptionFix);
                         irExceptionFix.Modifications = result.Modifications;
+						irExceptionFix.Parameters = result.Parameters;
 
                         target.CreateLabel(irExceptionFix);
                         result.Label = irExceptionFix.Label;

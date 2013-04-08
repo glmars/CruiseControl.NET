@@ -81,7 +81,23 @@ namespace ThoughtWorks.CruiseControl.Core.Tasks
         						}
         					}
 
-        					Log.Debug(string.Concat("MergeFilesTask: Add '", newFile.FileName, "' to '", newFile.MergeAction.ToString(), "' file list."));
+							// Load "deleteAfterMerge" flag
+							var deleteAfterMergeAttribute = fileElement.GetAttribute("deleteAfterMerge");
+							if (!string.IsNullOrEmpty(deleteAfterMergeAttribute))
+							{
+								try
+								{
+									newFile.DeleteAfterMerge = Boolean.Parse(deleteAfterMergeAttribute);
+								}
+								catch (Exception error)
+								{
+        							throw new NetReflectorConverterException(string.Concat(
+																				"Couldn't parse deleteAfterMerge bool value :'", deleteAfterMergeAttribute, Environment.NewLine,
+																				"'XML: " + fileElement.InnerXml), error);
+								}
+							}
+
+        					Log.Debug(string.Concat("MergeFilesTask: Add '", newFile.FileName, "' to '", newFile.MergeAction.ToString(), "' file list (deleteAfterMerge='", newFile.DeleteAfterMerge.ToString(),"')."));
         					fileList.Add(newFile);
         				}
         				else

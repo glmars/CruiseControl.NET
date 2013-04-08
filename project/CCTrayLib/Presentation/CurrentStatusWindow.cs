@@ -50,7 +50,7 @@ namespace ThoughtWorks.CruiseControl.CCTrayLib.Presentation
                 // Now we can do the actual monitor change
                 if (changeMonitor)
                 {
-                    Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,"Current Status for {0} [{1}]",
+                    Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,"{0} [{1}] current status",
                         value.Detail.ProjectName,
                         value.Detail.ServerName);
                     projectToMonitor = value;
@@ -170,6 +170,10 @@ namespace ThoughtWorks.CruiseControl.CCTrayLib.Presentation
             // Update the node
             node.Tag = value;
             node.Text = value.Name;
+			if (!String.IsNullOrEmpty(value.Description))
+			{
+				node.Text = value.Description;
+			}
             node.ImageKey = value.Status.ToString();
             node.SelectedImageKey = node.ImageKey;
 
