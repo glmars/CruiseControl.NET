@@ -50,7 +50,7 @@ namespace ThoughtWorks.CruiseControl.CCTrayLib.Presentation
                 // Now we can do the actual monitor change
                 if (changeMonitor)
                 {
-                    Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,"Current Status for {0} [{1}]",
+                    Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,"{0} [{1}] current status",
                         value.Detail.ProjectName,
                         value.Detail.ServerName);
                     projectToMonitor = value;
