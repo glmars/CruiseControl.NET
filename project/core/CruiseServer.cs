@@ -1512,11 +1512,11 @@ namespace ThoughtWorks.CruiseControl.Core
         {
             var allowedProjects = new List<ProjectStatus>();
             var userName = securityManager.GetUserName(sessionToken);
-            var defaultIsAllowed = (securityManager.GetDefaultRight(SecurityPermission.ViewProject) == SecurityRight.Allow);
+			var defaultViewProjectRight = securityManager.GetDefaultRight(SecurityPermission.ViewProject);
             foreach (ProjectStatus project in projects)
             {
                 IProjectIntegrator projectIntegrator = GetIntegrator(project.Name);
-                bool isAllowed = true;
+                bool isAllowed = (defaultViewProjectRight == SecurityRight.Allow);
                 if (projectIntegrator != null)
                 {
                     IProjectAuthorisation authorisation = projectIntegrator.Project.Security;
@@ -1524,16 +1524,12 @@ namespace ThoughtWorks.CruiseControl.Core
                     {
                         var thisUserName = userName;
                         if (string.IsNullOrEmpty(thisUserName)) thisUserName = authorisation.GuestAccountName;
-                        if (thisUserName == null)
-                        {
-                            isAllowed = defaultIsAllowed;
-                        }
-                        else
+                        if (!string.IsNullOrEmpty(thisUserName))
                         {
                             isAllowed = authorisation.CheckPermission(securityManager,
                                 thisUserName,
                                 SecurityPermission.ViewProject,
-                                SecurityRight.Allow);
+								defaultViewProjectRight);
                         }
                     }
                 }
