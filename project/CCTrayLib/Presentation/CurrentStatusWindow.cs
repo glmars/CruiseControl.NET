@@ -170,6 +170,10 @@ namespace ThoughtWorks.CruiseControl.CCTrayLib.Presentation
             // Update the node
             node.Tag = value;
             node.Text = value.Name;
+			if (!String.IsNullOrEmpty(value.Description))
+			{
+				node.Text = value.Description;
+			}
             node.ImageKey = value.Status.ToString();
             node.SelectedImageKey = node.ImageKey;
 
