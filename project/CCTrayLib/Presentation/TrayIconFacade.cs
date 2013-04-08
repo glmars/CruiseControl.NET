@@ -48,13 +48,22 @@ namespace ThoughtWorks.CruiseControl.CCTrayLib.Presentation
 			if (showBalloonMessages)
 			{
 				monitor.BuildOccurred += Monitor_BuildOccurred;
-				monitor.MessageReceived += Monitor_MessageReceived;
+				//monitor.MessageReceived += Monitor_MessageReceived;
 			}
 		}
 
         private void Monitor_MessageReceived(string projectName, ThoughtWorks.CruiseControl.Remote.Message message)
 		{
-            trayIcon.ShowBalloonTip(5000, projectName, message.ToString(), ToolTipIcon.Info);
+			ToolTipIcon notificationLevel = GetMessageNotificationLevel(message);
+			if (notificationLevel < minimumNotificationLevel)
+				return;
+
+			trayIcon.ShowBalloonTip(5000, projectName, message.ToString(), notificationLevel);
+		}
+
+		private ToolTipIcon GetMessageNotificationLevel(ThoughtWorks.CruiseControl.Remote.Message message)
+		{
+			return ToolTipIcon.Info;
 		}
 
 		private void IconProvider_IconChanged(object sender, EventArgs e)
