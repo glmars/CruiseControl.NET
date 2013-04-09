@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Web;
@@ -439,6 +440,10 @@ namespace ThoughtWorks.CruiseControl.Core
                         snapshot.ProjectStatuses = this.FilterProjects(
                             request.SessionToken, 
                             snapshot.ProjectStatuses);
+                        snapshot.QueueSetSnapshot = this.FilterQueues(
+                            request.SessionToken,
+ 							snapshot.ProjectStatuses, // must contain the filtered projects
+                            snapshot.QueueSetSnapshot);
                     }
                 }));
             response.Snapshot = snapshot;
@@ -1512,11 +1517,11 @@ namespace ThoughtWorks.CruiseControl.Core
         {
             var allowedProjects = new List<ProjectStatus>();
             var userName = securityManager.GetUserName(sessionToken);
-            var defaultIsAllowed = (securityManager.GetDefaultRight(SecurityPermission.ViewProject) == SecurityRight.Allow);
+			var defaultViewProjectRight = securityManager.GetDefaultRight(SecurityPermission.ViewProject);
             foreach (ProjectStatus project in projects)
             {
                 IProjectIntegrator projectIntegrator = GetIntegrator(project.Name);
-                bool isAllowed = true;
+                bool isAllowed = (defaultViewProjectRight == SecurityRight.Allow);
                 if (projectIntegrator != null)
                 {
                     IProjectAuthorisation authorisation = projectIntegrator.Project.Security;
@@ -1524,16 +1529,12 @@ namespace ThoughtWorks.CruiseControl.Core
                     {
                         var thisUserName = userName;
                         if (string.IsNullOrEmpty(thisUserName)) thisUserName = authorisation.GuestAccountName;
-                        if (thisUserName == null)
-                        {
-                            isAllowed = defaultIsAllowed;
-                        }
-                        else
+                        if (!string.IsNullOrEmpty(thisUserName))
                         {
                             isAllowed = authorisation.CheckPermission(securityManager,
                                 thisUserName,
                                 SecurityPermission.ViewProject,
-                                SecurityRight.Allow);
+								defaultViewProjectRight);
                         }
                     }
                 }
@@ -1543,6 +1544,28 @@ namespace ThoughtWorks.CruiseControl.Core
                 }
             }
             return allowedProjects.ToArray();
+        }
+        #endregion
+
+        #region FilterQueues()
+        /// <summary>
+        /// Filters a list of queues and only returns the queues for the projects that a user is allowed to view.
+        /// </summary>
+        /// <param name="sessionToken">The session token to use in filtering.</param>
+        /// <param name="filteredProjects">The already filtered projects.</param>
+        /// <param name="queueSet">The set of queues to filter.</param>
+        /// <returns>The filtered set.</returns>
+        private QueueSetSnapshot FilterQueues(string sessionToken, ProjectStatus[] filteredProjects, QueueSetSnapshot queueSet)
+        {
+            var allowedQueues = new QueueSetSnapshot();
+            var userName = securityManager.GetUserName(sessionToken);
+            var defaultIsAllowed = (securityManager.GetDefaultRight(SecurityPermission.ViewProject) == SecurityRight.Allow);
+            foreach (QueueSnapshot queue in queueSet.Queues)
+            {
+				if (filteredProjects.Select(x=>x.Queue).Contains(queue.QueueName))
+					allowedQueues.Queues.Add(queue);
+            }
+            return allowedQueues;
         }
         #endregion
 
@@ -1692,6 +1715,8 @@ namespace ThoughtWorks.CruiseControl.Core
                     // The project has been found and it has security
                     authorisation = projectIntegrator.Project.Security;
                     requiresSession = authorisation.RequiresSession(securityManager);
+					if (string.IsNullOrEmpty(userName))
+						userName = authorisation.GuestAccountName;
                 }
                 else if ((projectIntegrator != null) &&
                     (projectIntegrator.Project != null) &&
